@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Decidim
   module DecidimappK8s
     class Manager
@@ -30,7 +32,8 @@ module Decidim
                                                               password_confirmation: @conf.dig(:default_admin, :password),
                                                               newsletter_notifications_at: Time.zone.now,
                                                               admin_terms_accepted_at: Time.zone.now,
-                                                              confirmed_at: Time.zone.now }))
+                                                              confirmed_at: Time.zone.now
+                                                            }))
         end
       end
     end

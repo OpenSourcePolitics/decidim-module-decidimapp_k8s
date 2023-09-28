@@ -14,6 +14,6 @@ RSpec.configure do |_|
   I18n.default_locale = :en
 end
 
-def load_fixture!(filename= "configuration.yml")
+def load_fixture!(filename = "configuration.yml")
   YAML.load_file(File.join(__dir__, "fixtures", filename)).deep_symbolize_keys
 end

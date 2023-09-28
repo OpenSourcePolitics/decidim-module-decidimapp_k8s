@@ -4,18 +4,19 @@ source "https://rubygems.org"
 
 ruby RUBY_VERSION
 
-
-DECIDIM_VERSION = "0.27".freeze
+DECIDIM_VERSION = "0.27"
 DECIDIM_BRANCH = "release/#{DECIDIM_VERSION}-stable".freeze
 
 gem "decidim", "~> #{DECIDIM_VERSION}.0"
 gem "decidim-decidimapp_k8s", path: "."
 
-gem "puma", ">= 4.3"
 gem "bootsnap", "~> 1.4"
+gem "puma", ">= 4.3"
 
 group :development, :test do
   gem "byebug", "~> 11.0", platform: :mri
+  gem "rubocop-faker"
+  gem "rubocop-rspec"
 
   gem "decidim-dev", "~> #{DECIDIM_VERSION}.0"
 end

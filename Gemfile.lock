@@ -679,6 +679,9 @@ GEM
       unicode-display_width (>= 1.4.0, < 3.0)
     rubocop-ast (1.29.0)
       parser (>= 3.2.1.0)
+    rubocop-faker (1.1.0)
+      faker (>= 2.12.0)
+      rubocop (>= 0.82.0)
     rubocop-rails (2.15.2)
       activesupport (>= 4.2.0)
       rack (>= 1.1)
@@ -803,6 +806,8 @@ DEPENDENCIES
   letter_opener_web (~> 2.0)
   listen (~> 3.1)
   puma (>= 4.3)
+  rubocop-faker
+  rubocop-rspec
   spring (~> 2.0)
   spring-watcher-listen (~> 2.0)
   web-console (~> 4.2)
