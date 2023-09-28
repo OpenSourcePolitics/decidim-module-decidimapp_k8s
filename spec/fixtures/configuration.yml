@@ -8,7 +8,7 @@ default_admin:
   password: "X9oU2JVrycQv1234567"
 organizations:
   - name: "OSP Decidim"
-    host: decidim.osp.example
+    host: instance.osp.example
     secondary_hosts:
       - osp.example.org
       - osp.decidim.example

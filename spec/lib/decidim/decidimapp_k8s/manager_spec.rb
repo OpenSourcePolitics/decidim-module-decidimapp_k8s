@@ -6,7 +6,8 @@ describe Decidim::DecidimappK8s::Manager do
   subject { described_class.run(conf) }
 
   let(:conf) { load_fixture! }
-  let(:admin_email) { conf[:system_admin][:email] }
+  let(:system_admin_email) { conf.dig(:system_admin, :email) }
+  let(:admin_email) { conf.dig(:default_admin, :email) }
   let(:first_organization) { conf[:organizations].first }
   let(:last_organization) { conf[:organizations].last }
 
@@ -27,7 +28,7 @@ describe Decidim::DecidimappK8s::Manager do
 
   context "when system admin already exists" do
     before do
-      create(:admin, email: admin_email)
+      create(:admin, email: system_admin_email)
     end
 
     it "does not create a system admin" do
@@ -69,6 +70,34 @@ describe Decidim::DecidimappK8s::Manager do
 
       it "does not update organization" do
         expect { subject }.not_to change { organization }
+      end
+    end
+  end
+
+  context "when an admin already exists" do
+    let!(:organization) { create(:organization, host: first_organization[:host]) }
+    let!(:admin) { create(:user, :admin, organization: organization, email: admin_email) }
+
+    it "creates only one new admin" do
+      expect { subject }.to change(Decidim::User, :count).from(1).to(2)
+    end
+
+    it "updates the first admin" do
+      expect do
+        subject
+        admin.reload
+      end.to change(admin, :name)
+    end
+
+    context "and update fails" do
+      let(:conf) { load_fixture!("invalid_admin_conf.yml") }
+
+      it "does not block process and creates a new admin" do
+        expect { subject }.to change(Decidim::User, :count).from(1).to(2)
+      end
+
+      it "does not update admin" do
+        expect { subject }.not_to change { admin }
       end
     end
   end
