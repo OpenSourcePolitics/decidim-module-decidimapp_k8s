@@ -18,7 +18,7 @@ module Decidim
         # Create admins
         # Create users
 
-        Decidim::System::Admin.create!(@conf[:system_admin])
+        create_system_admin_if_not_exists
 
         @conf[:organizations].each do |org|
           Decidim::Organization.create!(org)
@@ -35,6 +35,21 @@ module Decidim
                                                               confirmed_at: Time.zone.now
                                                             }))
         end
+      rescue StandardError => e
+        puts e.message
+      end
+
+      def create_system_admin_if_not_exists
+        admin = Decidim::System::Admin.find_by(email: @conf.dig(:system_admin, :email))
+        return if admin.present?
+
+        create_system_admin!
+      end
+
+      def create_system_admin!
+        Decidim::System::Admin.create!(@conf[:system_admin])
+      rescue StandardError => e
+        puts e.message
       end
     end
   end
