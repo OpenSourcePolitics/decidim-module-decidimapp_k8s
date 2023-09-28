@@ -26,6 +26,27 @@ describe Decidim::DecidimappK8s::Manager do
     expect(Decidim::User.all.count).to eq(2)
   end
 
+  context "when method is called twice" do
+    before do
+      described_class.run(conf)
+    end
+
+    it "does not create a system admin" do
+      expect(Decidim::System::Admin.count).to eq(1)
+      expect { subject }.not_to change { Decidim::System::Admin }
+    end
+
+    it "does not create a new organization" do
+      expect(Decidim::Organization.count).to eq(2)
+      expect { subject }.not_to change { Decidim::Organization }
+    end
+
+    it "does not create a new admin for each organization" do
+      expect(Decidim::Organization.all.map(&:admins).flatten.count).to eq(2)
+      expect { subject }.not_to change { Decidim::User }
+    end
+  end
+
   context "when system admin already exists" do
     before do
       create(:admin, email: system_admin_email)
@@ -92,12 +113,12 @@ describe Decidim::DecidimappK8s::Manager do
     context "and update fails" do
       let(:conf) { load_fixture!("invalid_admin_conf.yml") }
 
-      it "does not block process and creates a new admin" do
-        expect { subject }.to change(Decidim::User, :count).from(1).to(2)
-      end
-
       it "does not update admin" do
         expect { subject }.not_to change { admin }
+      end
+
+      it "does not create a new admin" do
+        expect { subject }.not_to change(Decidim::User, :count)
       end
     end
   end

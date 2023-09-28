@@ -12,12 +12,6 @@ module Decidim
       end
 
       def run
-        # Setup objects based on configuration
-        # Create system admin
-        # Create organizations
-        # Create admins
-        # Create users
-
         create_system_admin_if_not_exists
 
         @conf[:organizations].each do |org|
@@ -41,10 +35,21 @@ module Decidim
           # For now, we are updating the admin directly in the database using update_columns
           # update_columns does not allow to update the password, so we are excluding it from the params
           params = @conf[:default_admin].except(:password)
-          existing_admin.update_columns(params)
+          existing_admin.name = params[:name]
+          existing_admin.nickname = params[:nickname]
+          existing_admin.validate! # Raises ActiveRecord::RecordInvalid if validations fail else returns true
+
+          # rubocop:disable Rails/SkipsModelValidations
+          existing_admin.update_columns(
+            name: params[:name],
+            nickname: params[:nickname]
+          )
+          # rubocop:enable Rails/SkipsModelValidations
         else
           admin.save!
         end
+      rescue StandardError => e
+        puts e.message
       end
 
       def new_user_for(org)

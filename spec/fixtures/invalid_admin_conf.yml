@@ -1,12 +1,12 @@
 # Errors added (looks for "ERROR:" in the file)
-# 1. First organization: default_locale CA is not a valid locale
-
+# - default_admin: name is required
+# - default_admin: nickname is required
 system_admin:
   email: "system@example.org"
   password: "X9oU2JVrycQv"
 default_admin:
-  name: "Admin user"
-  nickname: "admin"
+  name: "" # ERROR: name is required
+  nickname: "" # ERROR: nickname is required
   email: "admin@example.org"
   password: "X9oU2JVrycQv1234567"
 organizations:
@@ -18,7 +18,7 @@ organizations:
     available_locales:
       - en
       - fr
-    default_locale: ca # ERROR: CA is not a valid locale
+    default_locale: fr
     reference_prefix: "JKR"
     users_registration_mode: "enabled"
     file_upload_settings:
