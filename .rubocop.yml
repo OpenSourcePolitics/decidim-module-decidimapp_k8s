@@ -1,2 +1,3 @@
 inherit_from:
   - https://raw.githubusercontent.com/decidim/decidim/release/0.27-stable/.rubocop.yml
+  - .rubocop_decidimapp_k8s.yml

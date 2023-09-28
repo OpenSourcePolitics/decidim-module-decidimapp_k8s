@@ -46,6 +46,8 @@ module Decidim
         else
           Decidim::Organization.create!(organization)
         end
+      rescue StandardError
+        nil
       end
 
       # Create a new Decidim::System::Admin only if email does not already exists

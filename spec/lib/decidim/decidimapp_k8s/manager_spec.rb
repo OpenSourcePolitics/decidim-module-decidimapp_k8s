@@ -59,5 +59,17 @@ describe Decidim::DecidimappK8s::Manager do
         organization.reload
       end.to change(organization, :reference_prefix)
     end
+
+    context "and update fails" do
+      let(:conf) { load_fixture!("invalid_organization_conf.yml") }
+
+      it "does not block process and creates a new organization" do
+        expect { subject }.to change(Decidim::Organization, :count).from(1).to(2)
+      end
+
+      it "does not update organization" do
+        expect { subject }.not_to change { organization }
+      end
+    end
   end
 end
