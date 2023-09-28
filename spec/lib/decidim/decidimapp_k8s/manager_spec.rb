@@ -7,6 +7,8 @@ describe Decidim::DecidimappK8s::Manager do
 
   let(:conf) { load_fixture! }
   let(:admin_email) { conf[:system_admin][:email] }
+  let(:first_organization) { conf[:organizations].first }
+  let(:last_organization) { conf[:organizations].last }
 
   it "creates a system admin" do
     expect { subject }.to change(Decidim::System::Admin, :count).by(1)
@@ -38,6 +40,24 @@ describe Decidim::DecidimappK8s::Manager do
 
     it "does not update the system admin" do
       expect { subject }.not_to change(Decidim::System::Admin, :first)
+    end
+  end
+
+  context "when an organization already exists" do
+    let!(:organization) { create(:organization, host: first_organization[:host]) }
+
+    it "creates only one new organization" do
+      expect { subject }.to change(Decidim::Organization, :count).from(1).to(2)
+
+      expect(Decidim::Organization.first.host).to eq(first_organization[:host])
+      expect(Decidim::Organization.last.host).to eq(last_organization[:host])
+    end
+
+    it "updates the first organization" do
+      expect do
+        subject
+        organization.reload
+      end.to change(organization, :reference_prefix)
     end
   end
 end
