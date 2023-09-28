@@ -25,18 +25,38 @@ module Decidim
         end
 
         Decidim::Organization.all.each do |org|
-          Decidim::User.create!(@conf[:default_admin].merge({
-                                                              organization: org,
-                                                              admin: true,
-                                                              tos_agreement: true,
-                                                              password_confirmation: @conf.dig(:default_admin, :password),
-                                                              newsletter_notifications_at: Time.zone.now,
-                                                              admin_terms_accepted_at: Time.zone.now,
-                                                              confirmed_at: Time.zone.now
-                                                            }))
+          create_or_update_admin_for(org)
         end
       rescue StandardError => e
         puts e.message
+      end
+
+      def create_or_update_admin_for(organization)
+        admin = new_user_for(organization)
+        existing_admin = organization.admins.find_by(email: admin.email)
+
+        # If the admin exists, update it with the new values
+        if existing_admin.present?
+          # In User model searchable_fields callback is failing and not allowing to update the admin
+          # For now, we are updating the admin directly in the database using update_columns
+          # update_columns does not allow to update the password, so we are excluding it from the params
+          params = @conf[:default_admin].except(:password)
+          existing_admin.update_columns(params)
+        else
+          admin.save!
+        end
+      end
+
+      def new_user_for(org)
+        Decidim::User.new(@conf[:default_admin].merge({
+                                                        organization: org,
+                                                        admin: true,
+                                                        tos_agreement: true,
+                                                        password_confirmation: @conf.dig(:default_admin, :password),
+                                                        newsletter_notifications_at: Time.zone.now,
+                                                        admin_terms_accepted_at: Time.zone.now,
+                                                        confirmed_at: Time.zone.now
+                                                      }))
       end
 
       def create_or_update_organization(organization)
