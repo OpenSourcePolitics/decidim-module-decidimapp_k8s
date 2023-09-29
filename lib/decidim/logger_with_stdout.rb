@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Decidim
   class LoggerWithStdout < Logger
     def initialize(file_path, verbose: false)
