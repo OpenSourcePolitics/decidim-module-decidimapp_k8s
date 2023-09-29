@@ -4,13 +4,14 @@ require "spec_helper"
 
 describe "rake decidim_app:k8s:external_install_or_reload", type: :task do
   let(:path) { "spec/fixtures/configuration.yml" }
+  let(:log_path) { "spec/decidim_dummy_app/log/test.log" }
 
   it "preloads the Rails environment" do
     expect(task.prerequisites).to include "environment"
   end
 
   it "calls the manager service" do
-    with_modified_env path: path do
+    with_modified_env path: path, log_path: log_path do
       expect(Decidim::DecidimappK8s::Manager).to receive(:run).once
       task.execute
     end
