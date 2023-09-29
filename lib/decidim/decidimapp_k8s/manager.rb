@@ -42,7 +42,7 @@ module Decidim
           existing_admin.nickname = params[:nickname]
           existing_admin.validate! # Raises ActiveRecord::RecordInvalid if validations fail else returns true
 
-          log!(:info, "topic:admin action:update - #{existing_admin.email} already exists. Updating.")
+          log!(:warn, "topic:admin action:update - #{existing_admin.email} already exists for organization '#{organization.name}'. Updating.")
           # rubocop:disable Rails/SkipsModelValidations
           existing_admin.update_columns(
             name: params[:name],
@@ -50,7 +50,7 @@ module Decidim
           )
           # rubocop:enable Rails/SkipsModelValidations
         else
-          log!(:info, "topic:admin action:create - #{admin.email} does not exist. Creating.")
+          log!(:info, "topic:admin action:create - #{admin.email} does not exist for organization '#{organization.name}'. Creating.")
           admin.save!
         end
       rescue StandardError => e
@@ -70,26 +70,32 @@ module Decidim
       end
 
       def create_or_update_organization(organization)
-        org = Decidim::Organization.find_by(host: organization[:host])
+        org = (Decidim::Organization.find_by(host: organization[:host]) || Decidim::Organization.find_by(name: organization[:name]))
         if org.present?
-          log!(:info, "topic:organization action:update - #{org.host} already exists. Updating.")
-          org.update!(organization)
+          log!(:warn, "topic:organization action:update - 'name: #{org.name}' already exists. Updating.")
+          org.assign_attributes(organization)
+          return org.save! if org.valid?
+
+          log!(:error, "topic:organization action:update - 'host: #{organization[:host]}' could not be updated. (ERROR: #{org.errors.full_messages.join(", ")})")
         else
-          log!(:info, "topic:organization action:create - #{organization[:host]} does not exist. Creating.")
-          Decidim::Organization.create!(organization)
+          log!(:info, "topic:organization action:create - 'host: #{organization[:host]}' does not exist. Creating.")
+          org = Decidim::Organization.new(organization)
+
+          return org.save! if org.valid?
+
+          log!(:error, "topic:organization action:create - 'host: #{organization[:host]}' could not be created. (ERROR: #{org.errors.full_messages.join(", ")})")
         end
-      rescue StandardError
-        log!(:error, "topic:organization action:create - #{organization[:host]} could not be created.")
+      rescue StandardError => e
+        log!(:error, "topic:organization action:create - 'host: #{organization[:host]}' could not be created. (ERROR: #{e.message})")
       end
 
       # Create a new Decidim::System::Admin only if email does not already exists
       # @return Decidim::System::Admin || nil
       # TODO: System admin can't be updated
       def create_system_admin_if_not_exists
-        log!(:info, "Task - system_admin : #{@conf[:system_admin]}")
         admin = Decidim::System::Admin.find_by(email: @conf.dig(:system_admin, :email))
         if admin.present?
-          log!(:info, "topic:system_admin action:create - #{admin.email} already exists. Skipping creation.")
+          log!(:warn, "topic:system_admin action:create - #{admin.email} already exists. Skipping creation.")
           return admin
         end
 
@@ -107,7 +113,7 @@ module Decidim
         message = case level
                   when :info
                     message.green
-                  when :warning
+                  when :warn
                     message.yellow
                   when :error
                     message.red
