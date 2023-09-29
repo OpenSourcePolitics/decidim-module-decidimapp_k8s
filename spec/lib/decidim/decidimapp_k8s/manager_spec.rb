@@ -130,7 +130,7 @@ describe Decidim::DecidimappK8s::Manager do
 
     context "when logger is present" do
       it "logs the message with the given level" do
-        expect(mock_logger).to receive(:send).with(:info, "Test message")
+        expect(mock_logger).to receive(:send).with(:info, "\e[32mTest message\e[0m")
         subject.log!(:info, "Test message")
       end
     end

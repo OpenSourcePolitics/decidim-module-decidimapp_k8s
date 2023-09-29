@@ -85,7 +85,7 @@ module Decidim
         log!(:info, "Task - system_admin : #{@conf[:system_admin]}")
         admin = Decidim::System::Admin.find_by(email: @conf.dig(:system_admin, :email))
         if admin.present?
-          log!(:info, "[system_admin] #{admin.email} already exists. Skipping creation.")
+          log!(:info, "topic:system_admin action:create - #{admin.email} already exists. Skipping creation.")
           return admin
         end
 
@@ -93,12 +93,24 @@ module Decidim
       end
 
       def create_system_admin!
-        Decidim::System::Admin.create!(@conf[:system_admin])
+        system_admin = Decidim::System::Admin.create!(@conf[:system_admin])
+        log!(:info, "topic:system_admin action:create - '#{system_admin.email}' created successfully.")
       rescue StandardError => e
-        puts e.message
+        log!(:warning, "topic:system_admin action:create - #{e.message}")
       end
 
       def log!(level, message)
+        message = case level
+                  when :info
+                    message.green
+                  when :warning
+                    message.yellow
+                  when :error
+                    message.red
+                  else
+                    message.reset
+                  end
+
         @logger.send(level, message) if @logger.present?
       end
     end
