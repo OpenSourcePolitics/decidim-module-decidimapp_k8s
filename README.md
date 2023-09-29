@@ -4,8 +4,11 @@ Manage DecidimApp application to run on Kubernetes cluster.
 
 ## Usage
 
-DecidimappK8s will be available as a Component for a Participatory
-Space.
+This engine contains library to manage creation and update of decidim instances.
+
+It adds a new rake task : 
+
+> bundle exec rake decidim_app:k8s:external_install_or_reload path=./spec/fixtures/with_extra_admins.yml verbose=y
 
 ## Installation
 
@@ -20,6 +23,14 @@ And then execute:
 ```bash
 bundle
 ```
+
+## Requirements
+
+* Decidim application : v0.27.x
+
+## Getting started
+
+* See examples documentation : [examples](./docs/examples.md)
 
 ## Contributing
 
