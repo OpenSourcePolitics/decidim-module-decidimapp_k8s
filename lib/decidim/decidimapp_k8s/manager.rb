@@ -3,12 +3,15 @@
 module Decidim
   module DecidimappK8s
     class Manager
-      def initialize(conf)
+      attr_accessor :logger
+
+      def initialize(conf, logger = Rails.logger)
         @conf = conf
+        @logger = logger
       end
 
-      def self.run(conf)
-        new(conf).run
+      def self.run(conf, logger = Rails.logger)
+        new(conf, logger).run
       end
 
       def run
@@ -79,8 +82,12 @@ module Decidim
       # @return Decidim::System::Admin || nil
       # TODO: System admin can't be updated
       def create_system_admin_if_not_exists
+        log!(:info, "Task - system_admin : #{@conf[:system_admin]}")
         admin = Decidim::System::Admin.find_by(email: @conf.dig(:system_admin, :email))
-        return admin if admin.present?
+        if admin.present?
+          log!(:info, "[system_admin] #{admin.email} already exists. Skipping creation.")
+          return admin
+        end
 
         create_system_admin!
       end
@@ -89,6 +96,10 @@ module Decidim
         Decidim::System::Admin.create!(@conf[:system_admin])
       rescue StandardError => e
         puts e.message
+      end
+
+      def log!(level, message)
+        @logger.send(level, message) if @logger.present?
       end
     end
   end

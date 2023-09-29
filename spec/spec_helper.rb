@@ -12,6 +12,8 @@ RSpec.configure do |_|
   Decidim.available_locales = %w(ca es en fr)
   I18n.available_locales = [:ca, :es, :en, :fr]
   I18n.default_locale = :en
+
+  RSpec::Mocks.configuration.allow_message_expectations_on_nil = true
 end
 
 def load_fixture!(filename = "configuration.yml")

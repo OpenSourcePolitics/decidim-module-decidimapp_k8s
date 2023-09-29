@@ -122,4 +122,26 @@ describe Decidim::DecidimappK8s::Manager do
       end
     end
   end
+
+  describe "#log!" do
+    subject { described_class.new(conf, mock_logger) }
+
+    let(:mock_logger) { instance_double("ActiveSupport::Logger") }
+
+    context "when logger is present" do
+      it "logs the message with the given level" do
+        expect(mock_logger).to receive(:send).with(:info, "Test message")
+        subject.log!(:info, "Test message")
+      end
+    end
+
+    context "when logger is not present" do
+      let(:mock_logger) { nil }
+
+      it "does not log the message" do
+        expect(mock_logger).not_to receive(:send)
+        subject.log!(:info, "Test message")
+      end
+    end
+  end
 end
