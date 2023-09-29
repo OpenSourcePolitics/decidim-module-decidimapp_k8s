@@ -42,6 +42,7 @@ module Decidim
           existing_admin.nickname = params[:nickname]
           existing_admin.validate! # Raises ActiveRecord::RecordInvalid if validations fail else returns true
 
+          log!(:info, "topic:admin action:update - #{existing_admin.email} already exists. Updating.")
           # rubocop:disable Rails/SkipsModelValidations
           existing_admin.update_columns(
             name: params[:name],
@@ -49,10 +50,11 @@ module Decidim
           )
           # rubocop:enable Rails/SkipsModelValidations
         else
+          log!(:info, "topic:admin action:create - #{admin.email} does not exist. Creating.")
           admin.save!
         end
       rescue StandardError => e
-        puts e.message
+        log!(:error, "topic:admin action:create - #{admin.email} could not be created. #{e.message}")
       end
 
       def new_user_for(org)
@@ -70,12 +72,14 @@ module Decidim
       def create_or_update_organization(organization)
         org = Decidim::Organization.find_by(host: organization[:host])
         if org.present?
+          log!(:info, "topic:organization action:update - #{org.host} already exists. Updating.")
           org.update!(organization)
         else
+          log!(:info, "topic:organization action:create - #{organization[:host]} does not exist. Creating.")
           Decidim::Organization.create!(organization)
         end
       rescue StandardError
-        nil
+        log!(:error, "topic:organization action:create - #{organization[:host]} could not be created.")
       end
 
       # Create a new Decidim::System::Admin only if email does not already exists
