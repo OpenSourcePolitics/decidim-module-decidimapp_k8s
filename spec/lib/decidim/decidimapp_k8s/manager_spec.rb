@@ -83,7 +83,7 @@ describe Decidim::DecidimappK8s::Manager do
     end
 
     context "and update fails" do
-      let(:conf) { load_fixture!("invalid_organization_conf.yml") }
+      let(:conf) { load_fixture!("invalids/first_organization_conf.yml") }
 
       it "does not block process and creates a new organization" do
         expect { subject }.to change(Decidim::Organization, :count).from(1).to(2)
@@ -111,7 +111,7 @@ describe Decidim::DecidimappK8s::Manager do
     end
 
     context "and update fails" do
-      let(:conf) { load_fixture!("invalid_admin_conf.yml") }
+      let(:conf) { load_fixture!("invalids/default_admin_conf.yml") }
 
       it "does not update admin" do
         expect { subject }.not_to change { admin }
