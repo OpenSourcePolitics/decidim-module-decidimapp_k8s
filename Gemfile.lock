@@ -135,6 +135,7 @@ GEM
     chef-utils (18.3.0)
       concurrent-ruby
     childprocess (4.1.0)
+    climate_control (1.2.0)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
     coffee-rails (5.0.0)
@@ -799,6 +800,7 @@ PLATFORMS
 DEPENDENCIES
   bootsnap (~> 1.4)
   byebug (~> 11.0)
+  climate_control (~> 1.2)
   decidim (~> 0.27.0)
   decidim-decidimapp_k8s!
   decidim-dev (~> 0.27.0)

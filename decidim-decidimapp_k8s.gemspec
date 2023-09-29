@@ -20,5 +20,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency "decidim-core", Decidim::DecidimappK8s.decidim_version
   s.add_dependency "decidim-system", Decidim::DecidimappK8s.decidim_version
+  s.add_development_dependency "climate_control", "~> 1.2"
   s.add_development_dependency "decidim-dev", Decidim::DecidimappK8s.decidim_version
 end

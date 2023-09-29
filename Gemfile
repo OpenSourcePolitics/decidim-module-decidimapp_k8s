@@ -15,6 +15,7 @@ gem "puma", ">= 4.3"
 
 group :development, :test do
   gem "byebug", "~> 11.0", platform: :mri
+  gem "climate_control", "~> 1.2"
   gem "rubocop-faker"
   gem "rubocop-rspec"
 
