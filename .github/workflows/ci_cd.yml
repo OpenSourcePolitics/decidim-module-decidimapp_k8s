@@ -1,0 +1,50 @@
+name: "[CI] DecidimappK8s"
+on: [push]
+
+env:
+  CI: "true"
+  RUBY_VERSION: 3.0.6
+  NODE_VERSION: 16.9.1
+
+jobs:
+  main:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:11
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          POSTGRES_PASSWORD: postgres
+    env:
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_HOST: localhost
+    steps:
+      - name: Linting
+        uses: OpenSourcePolitics/lint-action@master
+        with:
+          ruby_version: ${{ env.RUBY_VERSION }}
+          node_version: ${{ env.NODE_VERSION }}
+      - name: Running rspec
+        uses: OpenSourcePolitics/rspec-action@master
+        with:
+          ruby_version: ${{ env.RUBY_VERSION }}
+          node_version: ${{ env.NODE_VERSION }}
+  release:
+    name: Generate release and push to RubyGems
+    needs: [main]
+    if: "github.ref == 'refs/heads/master'"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Github release and RubyGems push
+        uses: OpenSourcePolitics/decidim-publish-gem-action@master
+        with:
+          rubygems_api_key: ${{ secrets.RUBYGEMS_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
