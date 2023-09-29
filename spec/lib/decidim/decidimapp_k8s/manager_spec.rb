@@ -144,4 +144,22 @@ describe Decidim::DecidimappK8s::Manager do
       end
     end
   end
+
+  context "when extra admins are present" do
+    let(:conf) { load_fixture!("with_extra_admins.yml") }
+    let!(:organization) { create(:organization, host: first_organization[:host]) }
+    let!(:admin) { create(:user, :admin, organization: organization, email: admin_email) }
+
+    it "creates both extra admins for both organizations" do
+      expect { subject }.to change(Decidim::User, :count).from(1).to(6)
+    end
+
+    context "when an extra admin already exists" do
+      let!(:extra_admin) { create(:user, :admin, organization: organization, email: "jane_doe@example.org") }
+
+      it "creates only one new admin" do
+        expect { subject }.to change(Decidim::User, :count).from(2).to(6)
+      end
+    end
+  end
 end

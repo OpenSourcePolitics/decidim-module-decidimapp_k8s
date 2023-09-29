@@ -22,14 +22,21 @@ module Decidim
         end
 
         Decidim::Organization.all.each do |org|
-          create_or_update_admin_for(org)
+          create_or_update_admin_for(org, @conf[:default_admin])
+          create_extra_admins_for!(org)
         end
       rescue StandardError => e
         puts e.message
       end
 
-      def create_or_update_admin_for(organization)
-        admin = new_user_for(organization)
+      def create_extra_admins_for!(organization)
+        @conf.fetch(:admins, []).each do |admin|
+          create_or_update_admin_for(organization, admin)
+        end
+      end
+
+      def create_or_update_admin_for(organization, new_admin)
+        admin = new_user_for(organization, new_admin)
         existing_admin = organization.admins.find_by(email: admin.email)
 
         # If the admin exists, update it with the new values
@@ -37,7 +44,7 @@ module Decidim
           # In User model searchable_fields callback is failing and not allowing to update the admin
           # For now, we are updating the admin directly in the database using update_columns
           # update_columns does not allow to update the password, so we are excluding it from the params
-          params = @conf[:default_admin].except(:password)
+          params = new_admin.except(:password)
           existing_admin.name = params[:name]
           existing_admin.nickname = params[:nickname]
           existing_admin.validate! # Raises ActiveRecord::RecordInvalid if validations fail else returns true
@@ -57,16 +64,16 @@ module Decidim
         log!(:error, "topic:admin action:create - #{admin.email} could not be created. #{e.message}")
       end
 
-      def new_user_for(org)
-        Decidim::User.new(@conf[:default_admin].merge({
-                                                        organization: org,
-                                                        admin: true,
-                                                        tos_agreement: true,
-                                                        password_confirmation: @conf.dig(:default_admin, :password),
-                                                        newsletter_notifications_at: Time.zone.now,
-                                                        admin_terms_accepted_at: Time.zone.now,
-                                                        confirmed_at: Time.zone.now
-                                                      }))
+      def new_user_for(org, new_admin)
+        Decidim::User.new(new_admin.merge({
+                                            organization: org,
+                                            admin: true,
+                                            tos_agreement: true,
+                                            password_confirmation: new_admin.fetch(:password, nil),
+                                            newsletter_notifications_at: Time.zone.now,
+                                            admin_terms_accepted_at: Time.zone.now,
+                                            confirmed_at: Time.zone.now
+                                          }))
       end
 
       def create_or_update_organization(organization)
